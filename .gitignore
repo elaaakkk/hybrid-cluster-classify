@@ -20,7 +20,7 @@ env/
 .DS_Store
 Thumbs.db
 
-# data_raw/
+data_raw/
 .venv/
 __pycache__/
 
