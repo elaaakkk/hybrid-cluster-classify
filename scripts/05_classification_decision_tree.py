@@ -40,7 +40,8 @@ from scripts import config as cfg
 
 # Gunakan raw RFM agar aturan lebih mudah dibaca secara bisnis.
 # Kalau ingin memakai transformed RFM, ganti menjadi ["Recency", "Frequency", "Monetary"].
-FEATURE_COLS = ["Recency_raw", "Frequency_raw", "Monetary_raw"]
+# Masukkan ADI dan CV2 ke dalam pohon klasifikasi
+FEATURE_COLS = ["Recency_raw", "Frequency_raw", "Monetary_raw", "ADI", "CV2"]
 TARGET_COL = "segment_label"
 
 

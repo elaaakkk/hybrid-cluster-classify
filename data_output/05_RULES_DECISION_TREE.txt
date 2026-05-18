@@ -1,97 +1,28 @@
-|--- Frequency_raw <= 9.50
-|   |--- Monetary_raw <= 57956800.00
-|   |   |--- Recency_raw <= 524.00
-|   |   |   |--- Recency_raw <= 407.00
-|   |   |   |   |--- class: medium-moving
-|   |   |   |--- Recency_raw >  407.00
-|   |   |   |   |--- Monetary_raw <= 1212000.00
-|   |   |   |   |   |--- Monetary_raw <= 912100.00
-|   |   |   |   |   |   |--- class: slow-moving
-|   |   |   |   |   |--- Monetary_raw >  912100.00
-|   |   |   |   |   |   |--- class: slow-moving
-|   |   |   |   |--- Monetary_raw >  1212000.00
-|   |   |   |   |   |--- Recency_raw <= 484.00
-|   |   |   |   |   |   |--- class: medium-moving
-|   |   |   |   |   |--- Recency_raw >  484.00
-|   |   |   |   |   |   |--- Monetary_raw <= 3729800.00
-|   |   |   |   |   |   |   |--- class: slow-moving
-|   |   |   |   |   |   |--- Monetary_raw >  3729800.00
-|   |   |   |   |   |   |   |--- Recency_raw <= 514.50
-|   |   |   |   |   |   |   |   |--- class: medium-moving
-|   |   |   |   |   |   |   |--- Recency_raw >  514.50
-|   |   |   |   |   |   |   |   |--- class: medium-moving
-|   |   |--- Recency_raw >  524.00
-|   |   |   |--- Monetary_raw <= 18641820.00
-|   |   |   |   |--- Recency_raw <= 535.50
-|   |   |   |   |   |--- class: slow-moving
-|   |   |   |   |--- Recency_raw >  535.50
-|   |   |   |   |   |--- class: slow-moving
-|   |   |   |--- Monetary_raw >  18641820.00
-|   |   |   |   |--- Frequency_raw <= 1.50
-|   |   |   |   |   |--- Monetary_raw <= 20611020.00
-|   |   |   |   |   |   |--- class: slow-moving
-|   |   |   |   |   |--- Monetary_raw >  20611020.00
-|   |   |   |   |   |   |--- class: slow-moving
-|   |   |   |   |--- Frequency_raw >  1.50
-|   |   |   |   |   |--- Monetary_raw <= 31565065.00
-|   |   |   |   |   |   |--- Frequency_raw <= 5.50
-|   |   |   |   |   |   |   |--- class: slow-moving
-|   |   |   |   |   |   |--- Frequency_raw >  5.50
-|   |   |   |   |   |   |   |--- class: medium-moving
-|   |   |   |   |   |--- Monetary_raw >  31565065.00
-|   |   |   |   |   |   |--- class: medium-moving
-|   |--- Monetary_raw >  57956800.00
-|   |   |--- Monetary_raw <= 1466243136.00
-|   |   |   |--- Monetary_raw <= 63585584.00
-|   |   |   |   |--- Recency_raw <= 555.00
-|   |   |   |   |   |--- class: medium-moving
-|   |   |   |   |--- Recency_raw >  555.00
-|   |   |   |   |   |--- class: medium-moving
-|   |   |   |--- Monetary_raw >  63585584.00
-|   |   |   |   |--- class: medium-moving
-|   |   |--- Monetary_raw >  1466243136.00
-|   |   |   |--- Frequency_raw <= 7.50
-|   |   |   |   |--- class: medium-moving
-|   |   |   |--- Frequency_raw >  7.50
-|   |   |   |   |--- class: fast-moving
-|--- Frequency_raw >  9.50
-|   |--- Frequency_raw <= 28.50
-|   |   |--- Recency_raw <= 626.00
-|   |   |   |--- Monetary_raw <= 77292814.00
-|   |   |   |   |--- class: medium-moving
-|   |   |   |--- Monetary_raw >  77292814.00
-|   |   |   |   |--- Monetary_raw <= 979697280.00
-|   |   |   |   |   |--- Frequency_raw <= 14.50
-|   |   |   |   |   |   |--- class: medium-moving
-|   |   |   |   |   |--- Frequency_raw >  14.50
-|   |   |   |   |   |   |--- Frequency_raw <= 19.00
-|   |   |   |   |   |   |   |--- class: fast-moving
-|   |   |   |   |   |   |--- Frequency_raw >  19.00
-|   |   |   |   |   |   |   |--- class: fast-moving
-|   |   |   |   |--- Monetary_raw >  979697280.00
-|   |   |   |   |   |--- class: fast-moving
-|   |   |--- Recency_raw >  626.00
-|   |   |   |--- Monetary_raw <= 25810735.00
-|   |   |   |   |--- class: medium-moving
-|   |   |   |--- Monetary_raw >  25810735.00
-|   |   |   |   |--- Monetary_raw <= 3700381952.00
-|   |   |   |   |   |--- class: medium-moving
-|   |   |   |   |--- Monetary_raw >  3700381952.00
-|   |   |   |   |   |--- class: medium-moving
-|   |--- Frequency_raw >  28.50
-|   |   |--- Recency_raw <= 969.50
-|   |   |   |--- Monetary_raw <= 20951250.00
-|   |   |   |   |--- class: medium-moving
-|   |   |   |--- Monetary_raw >  20951250.00
-|   |   |   |   |--- Recency_raw <= 878.50
-|   |   |   |   |   |--- class: fast-moving
-|   |   |   |   |--- Recency_raw >  878.50
-|   |   |   |   |   |--- Monetary_raw <= 2603251200.00
-|   |   |   |   |   |   |--- class: fast-moving
-|   |   |   |   |   |--- Monetary_raw >  2603251200.00
-|   |   |   |   |   |   |--- class: fast-moving
-|   |   |--- Recency_raw >  969.50
-|   |   |   |--- Frequency_raw <= 55.00
-|   |   |   |   |--- class: medium-moving
-|   |   |   |--- Frequency_raw >  55.00
-|   |   |   |   |--- class: fast-moving
+|--- CV2 <= 0.19
+|   |--- Monetary_raw <= 8703993344.00
+|   |   |--- class: Intermittent
+|   |--- Monetary_raw >  8703993344.00
+|   |   |--- class: Lumpy
+|--- CV2 >  0.19
+|   |--- Frequency_raw <= 62.00
+|   |   |--- CV2 <= 0.45
+|   |   |   |--- Monetary_raw <= 1124449536.00
+|   |   |   |   |--- class: Intermittent
+|   |   |   |--- Monetary_raw >  1124449536.00
+|   |   |   |   |--- Frequency_raw <= 49.50
+|   |   |   |   |   |--- CV2 <= 0.33
+|   |   |   |   |   |   |--- class: Intermittent
+|   |   |   |   |   |--- CV2 >  0.33
+|   |   |   |   |   |   |--- Frequency_raw <= 28.50
+|   |   |   |   |   |   |   |--- class: Lumpy
+|   |   |   |   |   |   |--- Frequency_raw >  28.50
+|   |   |   |   |   |   |   |--- class: Lumpy
+|   |   |   |   |--- Frequency_raw >  49.50
+|   |   |   |   |   |--- class: Lumpy
+|   |   |--- CV2 >  0.45
+|   |   |   |--- Monetary_raw <= 201030224.00
+|   |   |   |   |--- class: Lumpy
+|   |   |   |--- Monetary_raw >  201030224.00
+|   |   |   |   |--- class: Lumpy
+|   |--- Frequency_raw >  62.00
+|   |   |--- class: Lumpy

@@ -39,8 +39,8 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from scripts import config as cfg
 
 
-FEATURE_COLS = ["Recency", "Frequency", "Monetary"]
-FEATURE_COLS_SCALED = ["scaled_Recency", "scaled_Frequency", "scaled_Monetary"]
+FEATURE_COLS = ["Recency", "Frequency", "Monetary", "ADI", "CV2"]
+FEATURE_COLS_SCALED = ["scaled_Recency", "scaled_Frequency", "scaled_Monetary", "scaled_ADI", "scaled_CV2"]
 
 
 def get_final_k() -> int:
@@ -110,10 +110,14 @@ def build_cluster_profile(clustered: pd.DataFrame) -> pd.DataFrame:
                      Recency_mean=("Recency_raw", "mean"),
                      Frequency_mean=("Frequency_raw", "mean"),
                      Monetary_mean=("Monetary_raw", "mean"),
+                     ADI_mean=("ADI", "mean"),   
+                     CV2_mean=("CV2", "mean"),   
                      Recency_median=("Recency_raw", "median"),
                      Frequency_median=("Frequency_raw", "median"),
                      Monetary_median=("Monetary_raw", "median"),
-                     last_sold_min=("last_sold", "min"),
+                     ADI_median = ("ADI", "median"),
+                     CV2_median = ("CV2", "median"),
+                     last_sold_min=("last_sold", "min"),  
                      last_sold_max=("last_sold", "max"),
                  )
                  .reset_index()
@@ -133,29 +137,38 @@ def build_cluster_profile(clustered: pd.DataFrame) -> pd.DataFrame:
 
 
 def assign_managerial_labels(profile: pd.DataFrame) -> pd.DataFrame:
-    """Memberi label fast/medium/slow berdasarkan ranking aktivitas cluster."""
+    """Memberi label berdasarkan metrik intermitensi ADI dan CV2 dengan Dynamic Threshold (Median)."""
     p = profile.copy()
-    k = len(p)
-
-    if cfg.MAP_TO_3_MANAGERIAL_LABELS:
-        labels = []
-        for _, row in p.iterrows():
-            if row["activity_rank"] == 1:
-                labels.append("fast-moving")
-            elif row["activity_rank"] == k:
-                labels.append("slow-moving")
-            else:
-                labels.append("medium-moving")
-        p["segment_label"] = labels
-    else:
-        # Alternatif kalau ingin label sebanyak cluster teknis.
-        p["segment_label"] = [f"segment-{int(r)}" for r in p["activity_rank"]]
-
-    p["interpretation"] = p["segment_label"].map({
-        "fast-moving": "SKU dengan aktivitas penjualan tertinggi; prioritas utama pemantauan ketersediaan.",
-        "medium-moving": "SKU dengan aktivitas penjualan menengah; dipantau rutin sebagai watchlist.",
-        "slow-moving": "SKU dengan aktivitas penjualan rendah; prioritas pemantauan rendah dan bahan evaluasi promosi/restock selektif.",
-    }).fillna("Segmen teknis hasil clustering.")
+    
+    # 1. Hitung batas (threshold) dinamis berdasarkan dataset tokomu
+    adi_threshold = p["ADI_mean"].median()
+    cv2_threshold = p["CV2_mean"].median()
+    
+    print(f"[04] Dynamic Threshold -> ADI: {adi_threshold:.2f}, CV2: {cv2_threshold:.2f}")
+    
+    labels = []
+    interpretations = []
+    
+    # 2. Terapkan logika kuadran dengan batas dinamis
+    for _, row in p.iterrows():
+        adi = row["ADI_mean"]
+        cv2 = row["CV2_mean"]
+        
+        if adi <= adi_threshold and cv2 <= cv2_threshold:
+            labels.append("Smooth")
+            interpretations.append(f"Paling stabil & rutin di toko ini (ADI <= {adi_threshold:.1f}). Aman untuk stok otomatis.")
+        elif adi <= adi_threshold and cv2 > cv2_threshold:
+            labels.append("Erratic")
+            interpretations.append("Sering laku tapi jumlah fluktuatif. Butuh safety stock ekstra.")
+        elif adi > adi_threshold and cv2 <= cv2_threshold:
+            labels.append("Intermittent")
+            interpretations.append(f"Jarang laku (ADI > {adi_threshold:.1f}) tapi jumlah konsisten. Pesan Just-in-Time.")
+        else: # adi > adi_threshold and cv2 > cv2_threshold
+            labels.append("Lumpy")
+            interpretations.append("Sangat jarang & acak. Risiko deadstock tertinggi, gunakan sistem PO.")
+            
+    p["segment_label"] = labels
+    p["interpretation"] = interpretations
 
     return p
 
