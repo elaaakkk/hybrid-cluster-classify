@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# VS Code
+.vscode/
+
+# Cache
+.ipynb_checkpoints/
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# data_raw/
+.venv/
+__pycache__/
+
+# Optional: output besar / hasil sementara
+# data_output/
