@@ -42,7 +42,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from scripts import config as cfg
 
 
-FEATURE_COLS = ["Recency", "Frequency", "Monetary"]
+FEATURE_COLS = ["Recency", "Frequency", "Monetary", "ADI", "CV2"]
 
 
 def clean_text(series: pd.Series) -> pd.Series:
@@ -131,9 +131,26 @@ def preprocess_transactions(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_rfm(trx: pd.DataFrame) -> pd.DataFrame:
-    """Agregasi transaksi menjadi fitur RFM per SKU."""
+    """Agregasi transaksi menjadi fitur RFM, ADI, dan CV2 per SKU."""
     reference_date = trx[cfg.COL_TGL].max() + pd.Timedelta(days=1)
+    total_days = (pd.Timestamp(cfg.DATE_MAX) - pd.Timestamp(cfg.DATE_MIN)).days + 1
 
+    # 1. Hitung agregasi harian untuk ADI & CV2
+    daily_trx = trx.groupby(["SKU", cfg.COL_TGL]).size().reset_index(name="daily_qty")
+    
+    adi_cv2_stats = daily_trx.groupby("SKU").agg(
+        active_days=("daily_qty", "count"),
+        qty_mean=("daily_qty", "mean"),
+        qty_std=("daily_qty", "std")
+    ).reset_index()
+
+    # 2. Rumus ADI dan CV2
+    adi_cv2_stats["ADI"] = total_days / adi_cv2_stats["active_days"]
+    adi_cv2_stats["qty_std"] = adi_cv2_stats["qty_std"].fillna(0) # Cegah error jika cuma laku 1 hari
+    # Tambahkan epsilon kecil (1e-9) untuk mencegah error division by zero
+    adi_cv2_stats["CV2"] = (adi_cv2_stats["qty_std"] / (adi_cv2_stats["qty_mean"] + 1e-9)) ** 2
+
+    # 3. Hitung RFM Klasik
     rfm = (
         trx.groupby("SKU", as_index=False)
            .agg(
@@ -148,13 +165,13 @@ def build_rfm(trx: pd.DataFrame) -> pd.DataFrame:
     rfm["Recency_raw"] = (reference_date - rfm["last_sold"]).dt.days.astype(int)
     rfm.loc[rfm["Recency_raw"] < 0, "Recency_raw"] = 0
     rfm["PriceCoverage"] = rfm["PriceCount"] / rfm["Frequency_raw"]
-
-    # Jika tidak ada harga valid sama sekali, Monetary dianggap unknown, bukan 0.
     rfm.loc[rfm["PriceCount"] == 0, "Monetary_raw"] = np.nan
 
-    # Kolom dasar yang selalu dipakai.
+    # 4. Gabungkan RFM dengan ADI & CV2
+    rfm = pd.merge(rfm, adi_cv2_stats[["SKU", "ADI", "CV2"]], on="SKU", how="left")
+
     rfm = rfm[[
-        "SKU", "Recency_raw", "Frequency_raw", "Monetary_raw",
+        "SKU", "Recency_raw", "Frequency_raw", "Monetary_raw", "ADI", "CV2",
         "PriceCount", "PriceCoverage", "first_sold", "last_sold"
     ]].copy()
 

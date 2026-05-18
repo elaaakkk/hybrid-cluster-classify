@@ -39,8 +39,8 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from scripts import config as cfg
 
 
-FEATURE_COLS = ["Recency", "Frequency", "Monetary"]
-FEATURE_COLS_SCALED = ["scaled_Recency", "scaled_Frequency", "scaled_Monetary"]
+FEATURE_COLS = ["Recency", "Frequency", "Monetary", "ADI", "CV2"]
+FEATURE_COLS_SCALED = ["scaled_Recency", "scaled_Frequency", "scaled_Monetary", "scaled_ADI", "scaled_CV2"]
 
 
 def get_final_k() -> int:
@@ -102,7 +102,7 @@ def minmax_rank_score(series: pd.Series, higher_is_better: bool = True) -> pd.Se
 
 
 def build_cluster_profile(clustered: pd.DataFrame) -> pd.DataFrame:
-    """Membentuk profil cluster dari rata-rata RFM dan jumlah SKU."""
+    """Membentuk profil cluster dari rata-rata RFM, ADI, CV2 dan jumlah SKU."""
     profile = (
         clustered.groupby("cluster")
                  .agg(
@@ -110,9 +110,13 @@ def build_cluster_profile(clustered: pd.DataFrame) -> pd.DataFrame:
                      Recency_mean=("Recency_raw", "mean"),
                      Frequency_mean=("Frequency_raw", "mean"),
                      Monetary_mean=("Monetary_raw", "mean"),
+                     ADI_mean=("ADI", "mean"),             # TAMBAHAN
+                     CV2_mean=("CV2", "mean"),             # TAMBAHAN
                      Recency_median=("Recency_raw", "median"),
                      Frequency_median=("Frequency_raw", "median"),
                      Monetary_median=("Monetary_raw", "median"),
+                     ADI_median=("ADI", "median"),         # TAMBAHAN
+                     CV2_median=("CV2", "median"),         # TAMBAHAN
                      last_sold_min=("last_sold", "min"),
                      last_sold_max=("last_sold", "max"),
                  )
@@ -133,30 +137,51 @@ def build_cluster_profile(clustered: pd.DataFrame) -> pd.DataFrame:
 
 
 def assign_managerial_labels(profile: pd.DataFrame) -> pd.DataFrame:
-    """Memberi label fast/medium/slow berdasarkan ranking aktivitas cluster."""
+    """Memberi label adaptif berdasarkan pola ADI & CV2 secara komparatif."""
     p = profile.copy()
     k = len(p)
-
-    if cfg.MAP_TO_3_MANAGERIAL_LABELS:
-        labels = []
-        for _, row in p.iterrows():
-            if row["activity_rank"] == 1:
-                labels.append("fast-moving")
-            elif row["activity_rank"] == k:
-                labels.append("slow-moving")
-            else:
-                labels.append("medium-moving")
-        p["segment_label"] = labels
+    
+    # 1. Urutkan cluster dari ADI terkecil (paling rutin) ke terbesar (paling jarang)
+    p_sorted = p.sort_values("ADI_mean").reset_index(drop=True)
+    
+    if k == 2:
+        p_sorted["segment_label"] = ["Routine Demand", "Lumpy Demand"]
+        p_sorted["interpretation"] = [
+            "Aktivitas tinggi & rutin. Terapkan Continuous Replenishment.",
+            "Aktivitas rendah & acak. Terapkan Pre-Order (PO) atau Dropship."
+        ]
+    elif k == 3:
+        p_sorted["segment_label"] = ["Routine Demand", "Intermittent Demand", "Lumpy Demand"]
+        p_sorted["interpretation"] = [
+            "Aktivitas tinggi & rutin. Terapkan Continuous Replenishment.",
+            "Jarang laku tapi stabil. Terapkan pemesanan Just-in-Time.",
+            "Aktivitas rendah & acak. Terapkan Pre-Order (PO) atau Dropship."
+        ]
+    elif k == 4:
+        # Bagi dua kelompok berdasarkan ADI, lalu urutkan masing-masing berdasarkan CV2 (kestabilan jumlah)
+        grup_rendah = p_sorted.iloc[:2].sort_values("CV2_mean").reset_index(drop=True)
+        grup_tinggi = p_sorted.iloc[2:].sort_values("CV2_mean").reset_index(drop=True)
+        
+        grup_rendah["segment_label"] = ["Smooth", "Erratic"]
+        grup_rendah["interpretation"] = [
+            "Rutin & stabil. Stok otomatis secukupnya.",
+            "Rutin tapi bergejolak. Sediakan safety stock ekstra."
+        ]
+        
+        grup_tinggi["segment_label"] = ["Intermittent", "Lumpy"]
+        grup_tinggi["interpretation"] = [
+            "Jarang laku tapi stabil. Terapkan pemesanan Just-in-Time.",
+            "Paling jarang & acak. Risiko deadstock tinggi, gunakan PO."
+        ]
+        
+        p_sorted = pd.concat([grup_rendah, grup_tinggi])
     else:
-        # Alternatif kalau ingin label sebanyak cluster teknis.
-        p["segment_label"] = [f"segment-{int(r)}" for r in p["activity_rank"]]
-
-    p["interpretation"] = p["segment_label"].map({
-        "fast-moving": "SKU dengan aktivitas penjualan tertinggi; prioritas utama pemantauan ketersediaan.",
-        "medium-moving": "SKU dengan aktivitas penjualan menengah; dipantau rutin sebagai watchlist.",
-        "slow-moving": "SKU dengan aktivitas penjualan rendah; prioritas pemantauan rendah dan bahan evaluasi promosi/restock selektif.",
-    }).fillna("Segmen teknis hasil clustering.")
-
+        p_sorted["segment_label"] = [f"Segment-{i+1}" for i in range(k)]
+        p_sorted["interpretation"] = "Segmen teknis."
+        
+    # 2. Gabungkan kembali ke urutan index aslinya menggunakan 'cluster' ID
+    p = p.merge(p_sorted[["cluster", "segment_label", "interpretation"]], on="cluster", how="left")
+    
     return p
 
 
