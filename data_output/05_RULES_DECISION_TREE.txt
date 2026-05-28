@@ -1,103 +1,40 @@
-|--- Frequency_raw <= 3.50
-|   |--- Recency_raw <= 614.50
-|   |   |--- Monetary_raw <= 359407376.00
-|   |   |   |--- Recency_raw <= 579.50
-|   |   |   |   |--- ADI <= 456.67
-|   |   |   |   |   |--- Monetary_raw <= 125990588.00
-|   |   |   |   |   |   |--- class: Lumpy
-|   |   |   |   |   |--- Monetary_raw >  125990588.00
-|   |   |   |   |   |   |--- class: Lumpy
-|   |   |   |   |--- ADI >  456.67
+|--- ADI <= 319.67
+|   |--- CV2 <= 0.16
+|   |   |--- ADI <= 30.88
+|   |   |   |--- CV2 <= 0.10
+|   |   |   |   |--- ADI <= 18.90
+|   |   |   |   |   |--- class: Smooth
+|   |   |   |   |--- ADI >  18.90
 |   |   |   |   |   |--- class: Lumpy
-|   |   |   |--- Recency_raw >  579.50
-|   |   |   |   |--- Frequency_raw <= 1.50
-|   |   |   |   |   |--- class: Intermittent
-|   |   |   |   |--- Frequency_raw >  1.50
-|   |   |   |   |   |--- class: Lumpy
-|   |   |--- Monetary_raw >  359407376.00
-|   |   |   |--- ADI <= 456.67
+|   |   |   |--- CV2 >  0.10
 |   |   |   |   |--- class: Smooth
-|   |   |   |--- ADI >  456.67
-|   |   |   |   |--- Recency_raw <= 393.50
+|   |   |--- ADI >  30.88
+|   |   |   |--- ADI <= 36.57
+|   |   |   |   |--- ADI <= 34.80
 |   |   |   |   |   |--- class: Lumpy
-|   |   |   |   |--- Recency_raw >  393.50
-|   |   |   |   |   |--- class: Smooth
-|   |--- Recency_raw >  614.50
-|   |   |--- ADI <= 456.67
-|   |   |   |--- Monetary_raw <= 78031604.00
-|   |   |   |   |--- Recency_raw <= 725.50
-|   |   |   |   |   |--- class: Intermittent
-|   |   |   |   |--- Recency_raw >  725.50
-|   |   |   |   |   |--- class: Intermittent
-|   |   |   |--- Monetary_raw >  78031604.00
-|   |   |   |   |--- Monetary_raw <= 275220912.00
-|   |   |   |   |   |--- class: Smooth
-|   |   |   |   |--- Monetary_raw >  275220912.00
-|   |   |   |   |   |--- class: Smooth
-|   |   |--- ADI >  456.67
-|   |   |   |--- Monetary_raw <= 299302144.00
-|   |   |   |   |--- Recency_raw <= 625.50
-|   |   |   |   |   |--- class: Intermittent
-|   |   |   |   |--- Recency_raw >  625.50
-|   |   |   |   |   |--- class: Intermittent
-|   |   |   |--- Monetary_raw >  299302144.00
-|   |   |   |   |--- Recency_raw <= 759.50
-|   |   |   |   |   |--- class: Smooth
-|   |   |   |   |--- Recency_raw >  759.50
-|   |   |   |   |   |--- class: Intermittent
-|--- Frequency_raw >  3.50
-|   |--- CV2 <= 0.19
-|   |   |--- Monetary_raw <= 11256800.00
-|   |   |   |--- ADI <= 146.79
-|   |   |   |   |--- Recency_raw <= 778.00
-|   |   |   |   |   |--- class: Smooth
-|   |   |   |   |--- Recency_raw >  778.00
-|   |   |   |   |   |--- class: Smooth
-|   |   |   |--- ADI >  146.79
-|   |   |   |   |--- Recency_raw <= 714.00
-|   |   |   |   |   |--- Monetary_raw <= 7091500.00
-|   |   |   |   |   |   |--- class: Lumpy
-|   |   |   |   |   |--- Monetary_raw >  7091500.00
-|   |   |   |   |   |   |--- class: Lumpy
-|   |   |   |   |--- Recency_raw >  714.00
-|   |   |   |   |   |--- class: Intermittent
-|   |   |--- Monetary_raw >  11256800.00
-|   |   |   |--- ADI <= 456.67
-|   |   |   |   |--- Monetary_raw <= 9540322304.00
-|   |   |   |   |   |--- Monetary_raw <= 18303455.00
-|   |   |   |   |   |   |--- Recency_raw <= 180.00
-|   |   |   |   |   |   |   |--- class: Smooth
-|   |   |   |   |   |   |--- Recency_raw >  180.00
-|   |   |   |   |   |   |   |--- class: Smooth
-|   |   |   |   |   |--- Monetary_raw >  18303455.00
-|   |   |   |   |   |   |--- class: Smooth
-|   |   |   |   |--- Monetary_raw >  9540322304.00
-|   |   |   |   |   |--- class: Erratic
-|   |   |   |--- ADI >  456.67
+|   |   |   |   |--- ADI >  34.80
+|   |   |   |   |   |--- class: Lumpy
+|   |   |   |--- ADI >  36.57
 |   |   |   |   |--- class: Lumpy
-|   |--- CV2 >  0.19
-|   |   |--- Frequency_raw <= 62.00
-|   |   |   |--- CV2 <= 0.45
-|   |   |   |   |--- Monetary_raw <= 1302910400.00
+|   |--- CV2 >  0.16
+|   |   |--- CV2 <= 0.60
+|   |   |   |--- ADI <= 169.62
+|   |   |   |   |--- class: Smooth
+|   |   |   |--- ADI >  169.62
+|   |   |   |   |--- CV2 <= 0.32
 |   |   |   |   |   |--- class: Smooth
-|   |   |   |   |--- Monetary_raw >  1302910400.00
-|   |   |   |   |   |--- Frequency_raw <= 49.50
-|   |   |   |   |   |   |--- CV2 <= 0.34
-|   |   |   |   |   |   |   |--- Monetary_raw <= 3561093760.00
-|   |   |   |   |   |   |   |   |--- class: Smooth
-|   |   |   |   |   |   |   |--- Monetary_raw >  3561093760.00
-|   |   |   |   |   |   |   |   |--- class: Smooth
-|   |   |   |   |   |   |--- CV2 >  0.34
-|   |   |   |   |   |   |   |--- Monetary_raw <= 2250406912.00
-|   |   |   |   |   |   |   |   |--- class: Erratic
-|   |   |   |   |   |   |   |--- Monetary_raw >  2250406912.00
-|   |   |   |   |   |   |   |   |--- class: Erratic
-|   |   |   |   |   |--- Frequency_raw >  49.50
-|   |   |   |   |   |   |--- class: Erratic
-|   |   |   |--- CV2 >  0.45
-|   |   |   |   |--- Frequency_raw <= 10.50
-|   |   |   |   |   |--- class: Erratic
-|   |   |   |   |--- Frequency_raw >  10.50
-|   |   |   |   |   |--- class: Erratic
-|   |   |--- Frequency_raw >  62.00
+|   |   |   |   |--- CV2 >  0.32
+|   |   |   |   |   |--- class: Smooth
+|   |   |--- CV2 >  0.60
 |   |   |   |--- class: Erratic
+|--- ADI >  319.67
+|   |--- CV2 <= 0.09
+|   |   |--- class: Intermittent
+|   |--- CV2 >  0.09
+|   |   |--- CV2 <= 0.20
+|   |   |   |--- class: Lumpy
+|   |   |--- CV2 >  0.20
+|   |   |   |--- CV2 <= 0.29
+|   |   |   |   |--- class: Intermittent
+|   |   |   |--- CV2 >  0.29
+|   |   |   |   |--- class: Smooth

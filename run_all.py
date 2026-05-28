@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SCRIPTS = [
     "01_build_master.py",
-    "02_preprocess_transform_rfm.py",
+    "scripts/02_preprocess_transform_demand.py",
     "03_determine_k_dbi.py",
     "04_cluster_label_interpret.py",
     "05_classification_decision_tree.py",

@@ -4,30 +4,17 @@
 TAHAP 3 - Penentuan jumlah cluster K dengan DBI sebagai kriteria utama.
 
 Input:
-- data_output/02_RFM_FEATURES.xlsx
+- data_output/02_DEMAND_FEATURES.xlsx
 
 Proses:
-1. Membaca fitur scaled dari tiap skenario S1-S5.
+1. Membaca fitur scaled (ADI & CV2) dari tiap skenario S1-S5.
 2. Menjalankan K-Means untuk K = K_MIN sampai K_MAX.
-3. Menghitung:
-   - Davies-Bouldin Index / DBI: kecil = baik, menjadi kriteria utama.
-   - Silhouette Score: besar = baik, metrik pendukung.
-   - Calinski-Harabasz Index: besar = baik, metrik pendukung.
-   - WSS/Inertia: untuk melihat elbow.
-4. Memilih K terbaik per skenario berdasarkan DBI terkecil.
-5. Jika DBI seri, tie-break memakai Silhouette terbesar, lalu CHI terbesar.
-
-Output:
-- data_output/03_K_EVALUATION_DBI.xlsx
-  Sheet:
-  - k_scores_all
-  - best_k_by_scenario
-  - best_overall
+3. Menghitung DBI, Silhouette, CHI, dan WSS.
+4. Memilih K terbaik per skenario.
 """
 
 import sys
 from pathlib import Path
-
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score, silhouette_score
@@ -35,19 +22,16 @@ from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score, silho
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 from scripts import config as cfg
 
-
-FEATURE_COLS_SCALED = ["scaled_Recency", "scaled_Frequency", "scaled_Monetary"]
+# [BERUBAH] Fitur yang dievaluasi hanya ADI dan CV2
+FEATURE_COLS_SCALED = ["scaled_ADI", "scaled_CV2"]
 SCENARIOS = ["S1", "S2", "S3", "S4", "S5"]
 
-
 def load_scaled_features(scenario: str) -> pd.DataFrame:
-    if not cfg.RFM_XLSX.exists():
-        raise FileNotFoundError(f"File RFM belum ada: {cfg.RFM_XLSX}. Jalankan 02_preprocess_transform_rfm.py dulu.")
-    return pd.read_excel(cfg.RFM_XLSX, sheet_name=f"{scenario}_scaled")
-
+    if not cfg.DEMAND_FEATURES_XLSX.exists():
+        raise FileNotFoundError(f"File Demand Features belum ada: {cfg.DEMAND_FEATURES_XLSX}")
+    return pd.read_excel(cfg.DEMAND_FEATURES_XLSX, sheet_name=f"{scenario}_scaled")
 
 def evaluate_k_for_scenario(scenario: str, df_scaled: pd.DataFrame) -> pd.DataFrame:
-    """Menghitung DBI, Silhouette, CHI, dan WSS untuk rentang K tertentu."""
     X = df_scaled[FEATURE_COLS_SCALED].astype(float).values
     rows = []
 
@@ -65,14 +49,10 @@ def evaluate_k_for_scenario(scenario: str, df_scaled: pd.DataFrame) -> pd.DataFr
             "Calinski_Harabasz": float(calinski_harabasz_score(X, labels)),
             "n_sku_evaluated": int(len(df_scaled)),
         })
-
     return pd.DataFrame(rows)
 
-
 def pick_best_k_dbi(df_scores: pd.DataFrame) -> pd.DataFrame:
-    """Memilih K terbaik per skenario: DBI minimum, lalu Silhouette maksimum, lalu CHI maksimum."""
     best_rows = []
-
     for scenario, group in df_scores.groupby("scenario"):
         g = group.copy()
         cand = g[g["Davies_Bouldin"] == g["Davies_Bouldin"].min()].copy()
@@ -81,31 +61,16 @@ def pick_best_k_dbi(df_scores: pd.DataFrame) -> pd.DataFrame:
         if len(cand) > 1:
             cand = cand[cand["Calinski_Harabasz"] == cand["Calinski_Harabasz"].max()].copy()
         best_rows.append(cand.sort_values("k").iloc[0])
-
     return pd.DataFrame(best_rows).reset_index(drop=True)
 
-
 def pick_best_overall(best_by_scenario: pd.DataFrame, final_scenario: str = "S1") -> pd.DataFrame:
-    """
-    Memilih hasil final berdasarkan skenario utama penelitian.
-    Default: S1 = log1p Frequency & Monetary + Z-score.
-    
-    Catatan:
-    Skenario lain tetap disimpan sebagai pembanding, tetapi tidak dipakai
-    sebagai model final karena S5/tanpa scaling bisa bias akibat perbedaan
-    skala fitur RFM.
-    """
     cand = best_by_scenario[best_by_scenario["scenario"] == final_scenario].copy()
-
     if cand.empty:
-        raise ValueError(f"Skenario final {final_scenario} tidak ditemukan di best_by_scenario.")
-
+        raise ValueError(f"Skenario final {final_scenario} tidak ditemukan.")
     return cand.sort_values(["Davies_Bouldin", "k"], ascending=[True, True]).head(1).reset_index(drop=True)
 
-
 def main():
-    print("[03] Mulai evaluasi K berbasis DBI...")
-
+    print("[03] Mulai evaluasi K berbasis DBI untuk ADI & CV2...")
     all_scores = []
     for scenario in SCENARIOS:
         df_scaled = load_scaled_features(scenario)
@@ -121,11 +86,8 @@ def main():
         best_overall.to_excel(writer, index=False, sheet_name="best_overall")
 
     print("[03] Best K per skenario:")
-    print(best_k_by_scenario[["scenario", "k", "Davies_Bouldin", "Silhouette", "Calinski_Harabasz"]])
-    print("[03] Best overall:")
-    print(best_overall[["scenario", "k", "Davies_Bouldin", "Silhouette", "Calinski_Harabasz"]])
+    print(best_k_by_scenario[["scenario", "k", "Davies_Bouldin", "Silhouette"]])
     print(f"[03] Saved: {cfg.K_EVAL_XLSX}")
-
 
 if __name__ == "__main__":
     main()
