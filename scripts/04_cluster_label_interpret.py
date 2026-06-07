@@ -168,7 +168,9 @@ def build_cluster_profile(clustered: pd.DataFrame) -> pd.DataFrame:
         "CV2_max": ("CV2", "max"),
     }
 
-    # Kolom revenue hanya dipakai kalau tersedia.
+    if "zero_month_ratio" in clustered.columns:
+        agg_spec["ZMR_mean"] = ("zero_month_ratio", "mean")
+
     # Revenue tidak digunakan untuk clustering.
     if "Total_Revenue" in clustered.columns:
         agg_spec["Total_Revenue_mean"] = ("Total_Revenue", "mean")
@@ -179,6 +181,11 @@ def build_cluster_profile(clustered: pd.DataFrame) -> pd.DataFrame:
         .agg(**agg_spec)
         .reset_index()
     )
+    
+    if "Total_Revenue_sum" in profile.columns:
+        total_all_revenue = profile["Total_Revenue_sum"].sum()
+        # Membuat kolom persentase (dalam skala 0-100%)
+        profile["Revenue_Percentage"] = (profile["Total_Revenue_sum"] / total_all_revenue) * 100
 
     return profile
 

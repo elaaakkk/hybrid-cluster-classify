@@ -75,6 +75,18 @@ def preprocess_transactions(df: pd.DataFrame) -> pd.DataFrame:
 def build_demand_features(trx: pd.DataFrame) -> pd.DataFrame:
     """Menghitung metrik ADI dan CV2 murni untuk setiap SKU."""
     total_days = (pd.Timestamp(cfg.DATE_MAX) - pd.Timestamp(cfg.DATE_MIN)).days + 1
+    #buat kolom priode bulan tahun untuk transaksi
+    trx["YearMonth"] = trx [cfg.COL_TGL].dt.to_period("M")
+    
+    #hitung total bulan kalender dari DATE_MIN sampai DATE_MAX
+    total_months = len(pd.period_range(start=cfg.DATE_MIN, end=cfg.DATE_MAX, freq="M"))
+
+    #hitung berapa bulan SKU ini laku, lalu cari presentase bulan kosongnya
+    monthly_active = trx.groupby("SKU")["YearMonth"].nunique().reset_index(name="active_months")
+    monthly_active["zero_month_ratio"] = 1.0 - (monthly_active["active_months"] / total_months)
+    monthly_active["zero_month_ratio"] = monthly_active["zero_month_ratio"].clip(lower=0.0)
+
+    trx.drop(columns=["YearMonth"], inplace=True)
 
     # 1. Agregasi penjualan harian (Kuantitas harian per barang)
     daily_trx = trx.groupby(["SKU", cfg.COL_TGL]).size().reset_index(name="daily_qty")
@@ -91,10 +103,17 @@ def build_demand_features(trx: pd.DataFrame) -> pd.DataFrame:
     demand_df["qty_std"] = demand_df["qty_std"].fillna(0)
     demand_df["CV2"] = (demand_df["qty_std"] / (demand_df["qty_mean"] + 1e-9)) ** 2
 
-    # 4. (Opsional) Tambahkan total penjualan untuk reporting saja, bukan untuk clustering
-    sales = trx.groupby("SKU").agg(Total_Terjual=(cfg.COL_HARGA, "count"), Total_Revenue=(cfg.COL_HARGA, "sum")).reset_index()
+    # 4. (Opsional) Tambahkan total penjualan untuk reporting 
+    sales = trx.groupby("SKU").agg(
+        Total_Terjual=(cfg.COL_HARGA, "count"),
+        Total_Revenue=(cfg.COL_HARGA, "sum")
+    ).reset_index()
+
     demand_df = pd.merge(demand_df, sales, on="SKU", how="left")
 
+    #gabung fitur zmr ke demand_df
+    demand_df = pd.merge(demand_df, monthly_active[["SKU", "zero_month_ratio"]], on="SKU", how="left")
+                         
     print(f"[02] Jumlah SKU diproses: {len(demand_df)}")
     return demand_df
 
